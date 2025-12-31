@@ -3,23 +3,18 @@
 let leftClick = false;
 let rightClick = false;
 
-// 🎯 PROMISE 1: LEFT CLICK lub REJECT po 3s
 // eslint-disable-next-line no-unused-vars
 const firstPromise = new Promise((resolve, reject) => {
-  const logo = document.querySelector('.logo');
-
-  logo.addEventListener(
+  document.addEventListener(
     'click',
     (e) => {
       if (e.button === 0 && !leftClick) {
-        // LEFT CLICK ONLY
+        // LEFT CLICK ANYWHERE
         leftClick = true;
         resolve('First promise was resolved');
       }
     },
-    {
-      once: true,
-    },
+    { once: true },
   );
 
   setTimeout(() => reject(new Error('First promise was rejected')), 3000);
@@ -31,33 +26,46 @@ const firstPromise = new Promise((resolve, reject) => {
     document.body.innerHTML += `<div class="message error" data-qa="notification">${error.message}</div>`;
   }); // eslint-disable-line no-unused-vars
 
-// 🎯 PROMISE 2: LEFT LUB RIGHT CLICK (nigdy nie reject)
-// eslint-disable-next-line no-unused-vars
+// 🎯 PROMISE 2: LEFT LUB RIGHT CLICK (mousedown + contextmenu)
 const secondPromise = new Promise((resolve) => {
-  document.addEventListener(
-    'click',
-    (e) => {
-      if (e.button === 0) {
-        leftClick = true;
-      }
+  // LEFT CLICK
+  document.addEventListener('mousedown', (e) => {
+    if (e.button === 0) {
+      leftClick = true;
+    }
+  });
 
-      if (e.button === 2) {
-        rightClick = true;
-      }
+  // RIGHT CLICK (contextmenu)
+  document.addEventListener(
+    'contextmenu',
+    (e) => {
+      e.preventDefault();
+      rightClick = true;
 
       if (leftClick || rightClick) {
         resolve('Second promise was resolved');
       }
     },
-    {
-      once: true,
-    },
+    { once: true },
   );
-}).then((message) => {
+
+  // LEFT CLICK TEŻ
+  document.addEventListener(
+    'click',
+    (e) => {
+      if (e.button === 0 && (leftClick || rightClick)) {
+        resolve('Second promise was resolved');
+      }
+    },
+    { once: true },
+  );
+});
+
+secondPromise.then((message) => {
   document.body.innerHTML += `<div class="message success" data-qa="notification">${message}</div>`;
 }); // eslint-disable-line no-unused-vars
 
-// 🎯 PROMISE 3: OBA kliknięcia (left + right)
+// 🎯 PROMISE 3: OBA kliknięcia
 // eslint-disable-next-line no-unused-vars
 const thirdPromise = Promise.all([
   new Promise((resolve) => {
@@ -72,9 +80,7 @@ const thirdPromise = Promise.all([
             resolve();
           }
         },
-        {
-          once: true,
-        },
+        { once: true },
       );
     }
   }),
@@ -89,9 +95,7 @@ const thirdPromise = Promise.all([
           rightClick = true;
           resolve();
         },
-        {
-          once: true,
-        },
+        { once: true },
       );
     }
   }),
